@@ -45,6 +45,10 @@ public class Imagem extends Geometria {
 
     }
 
+    public void setSpriteSize(float[] coordenadasTexturas){
+        this.coordenadasTexturas = coordenadasTexturas;
+        bufferTextura = generateBuffer(coordenadasTexturas);
+    }
     public void setImagem(int textura) {
         this.codTextura = textura;
 

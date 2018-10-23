@@ -20,6 +20,7 @@ class Render implements GLSurfaceView.Renderer {
     private Imagem sol = null;
     private Imagem terra = null;
     private Imagem lua = null;
+    private Imagem sprite = null;
     private int angulo = 0;
 
     public Render(Activity tela) {
@@ -75,21 +76,37 @@ class Render implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         configuraTela(gl, width, height);
+
+
+        float[] coordenadasTexturas = new float[]{
+                0, 0.25f,
+                0, 0,
+                0.5f, 0.25f,
+                0.5f, 0
+        };
+
+        sprite = new Imagem(gl,TAMANHO, tela);
+        sprite.setSpriteSize(coordenadasTexturas);
+//        sprite.setXY(largura/2,altura/2);
+        sprite.setImagem(R.mipmap.sprite);
+
+
         sol = new Imagem(gl, TAMANHO*2,tela);
         sol.setXY(largura / 2, altura / 2);
         sol.setCor(Geometria.BRANCO);
-        sol.setImagem(R.drawable.sol);
+        sol.setImagem(R.mipmap.sol);
 
         terra = new Imagem(gl,TAMANHO,tela);
         terra.setXY(100 + terra.tamanho,0)
                 .setCor(Geometria.BRANCO);
-        terra.setImagem(R.drawable.terra);
+        terra.setImagem(R.mipmap.terra);
 
         lua = new Imagem(gl,TAMANHO/2,tela);
         lua.setXY(100+lua.tamanho,0).setCor(Geometria.BRANCO);
-        lua.setImagem(R.drawable.lua);
+        lua.setImagem(R.mipmap.lua);
 
         sol.empilhaImagem(terra);
+        sol.empilhaImagem(lua);
         terra.empilhaImagem(lua);
 
         //ASSINAR A TEXTURA QUE A OPENGL VAI UTILIZAR NO DESENHO DA PRIMITIVA
@@ -104,10 +121,11 @@ class Render implements GLSurfaceView.Renderer {
         //Aplica a cor de limpeza da tela a todos os bits do buffer de cor
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
+        sprite.desenha();
         sol.desenha();
         sol.setRotacao(angulo);
-        terra.setRotacao(angulo);
-        lua.setRotacao(angulo);
+        terra.setRotacao(angulo+1);
+        lua.setRotacao(angulo+2);
         angulo++;
     }
 }
