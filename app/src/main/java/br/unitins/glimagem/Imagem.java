@@ -17,11 +17,16 @@ public class Imagem extends Geometria {
     private float[] coordenadasTexturas;
     private FloatBuffer bufferTextura;
     private int textura;
+    private float larguraImagem, larguraQuadro;
     private ArrayList<Imagem> pilhaImagem;
-    private boolean flag = false;
+    private int iTotalColunas, iTotalLinhas, frameAtual = -1;
+    private boolean needLoadIdenty = true;
+    private int direcao = 30;
+
 
     public Imagem(GL10 gl, int tamanho, Activity tela) {
         super(gl, tamanho);
+        this.setCor(Geometria.BRANCO);
         this.tela = tela;
         this.coordenadas = new float[]{
                 -tamanho / 2, -tamanho / 2,
@@ -45,10 +50,46 @@ public class Imagem extends Geometria {
 
     }
 
-    public void setSpriteSize(float[] coordenadasTexturas){
-        this.coordenadasTexturas = coordenadasTexturas;
-        bufferTextura = generateBuffer(coordenadasTexturas);
+    public void setSpriteSize(int[] i) {
+        iTotalColunas = i[0];
+        iTotalLinhas = i[1];
+
     }
+
+    public void setSpriteFrame(int indiceQuadro) {
+        larguraQuadro = larguraImagem / iTotalColunas;
+        float fCoordXinferior = (indiceQuadro % iTotalColunas) * (1.0f / iTotalColunas);
+        float fCoordYdireito = (indiceQuadro / iTotalColunas) * (1.0f / iTotalLinhas);
+
+        float fCoordXsuperior = fCoordXinferior + 1.0f / (larguraImagem / larguraQuadro);
+        float fCoordYesquerdo = fCoordYdireito + 0.5f / (larguraImagem / larguraQuadro);
+
+
+        if (direcao> 0) {
+            coordenadasTexturas = new float[]{
+                    fCoordXinferior, fCoordYesquerdo,
+                    fCoordXinferior, fCoordYdireito,
+                    fCoordXsuperior, fCoordYesquerdo,
+                    fCoordXsuperior, fCoordYdireito,
+
+            };
+        }else {
+            coordenadasTexturas = new float[]{
+                    fCoordXsuperior, fCoordYesquerdo,
+                    fCoordXsuperior, fCoordYdireito,
+                    fCoordXinferior, fCoordYesquerdo,
+                    fCoordXinferior, fCoordYdireito,
+
+            };
+
+        }
+        if (indiceQuadro != frameAtual) {
+            bufferTextura = generateBuffer(coordenadasTexturas);
+
+        }
+        frameAtual = indiceQuadro;
+    }
+
     public void setImagem(int textura) {
         this.codTextura = textura;
 
@@ -58,6 +99,7 @@ public class Imagem extends Geometria {
         //CARREGA A IMAGEM NA MEMORIA RAAAMMMM
         Bitmap imagem = BitmapFactory.decodeResource(tela.getResources(), codTextura);
 
+        larguraImagem = imagem.getWidth();
         //DEFINE UM ARRAY PARA ARMAZ. DOS IDS DE TEXTURA (APENAS 1 POSICAO)
         int[] idTextura = new int[1];
 
@@ -91,7 +133,7 @@ public class Imagem extends Geometria {
 
         setAfterDraw();
 
-        if (!flag)
+        if (needLoadIdenty)
             gl.glLoadIdentity();
         //HABILITANTO A MÁQUINA OPENGL PARA O USO DE TEXTURAS
         gl.glEnable(GL10.GL_TEXTURE_2D);
@@ -115,15 +157,28 @@ public class Imagem extends Geometria {
 
             for (Imagem imagem : pilhaImagem
                     ) {
-                imagem.flag = true;
+                imagem.needLoadIdenty = false;
                 imagem.desenha();
             }
             gl.glPopMatrix();
 
-            flag = false;
+            needLoadIdenty = true;
 
         }
 
+
+    }
+
+    public void animacao(float larguraTela) {
+        if (getPosX() <= 0) {
+            direcao = 10;
+            setRotacao(this.rotacao * -1);
+        }
+        if (getPosX() >= larguraTela - tamanho) {
+            direcao = -10;
+            setRotacao(this.rotacao * -1);
+        }
+        setXY(this.posX + direcao, this.posY);
 
     }
 
